@@ -76,6 +76,12 @@ bool make_file(char *path){
 	fclose(file);
 }
 
+bool write_file(char *path, char *content){
+	FILE *file = fopen(path, "w");
+	fwrite(content, 1, buffersize, file);
+	fclose(file);
+}
+
 bool remove_directory(char *path){
 	int res = rmdir(path);
 	if(res == -1){
@@ -218,8 +224,32 @@ void get_table_rows(char *database_name, char *table_name) {
 	}
 }
 
-void save_local_table(char *database_name, char *table_name){
+void dump_local_table(char *database_name, char *table_name){
+	filebuffer[0] = 0;
+	strcat(filebuffer, "#Structure\n");
+
+	int i = 0;
+
+	for (i = 0;i < column_list_size;i++){
+		strcat(filebuffer, columns_list[i]);
+		strcat(filebuffer, ":");
+		strcat(filebuffer, columns_list_type[i]);
+		strcat(filebuffer, "\n");
+	}
+
+	strcat(filebuffer, "\n");
+	strcat(filebuffer, "#Data\n");
+
+	for (i = 0;i < row_list_size;i++){
+		strcat(filebuffer, rows_list[i]);
+		strcat(filebuffer, "\n");
+	}
+
+	char temp[buffersize];
 	
+	write_table_path(temp, database_name, table_name);
+
+	write_file(temp, filebuffer);
 }
 
 bool remove_column(char *database_name, char *table_name, char *column_name){
@@ -236,6 +266,7 @@ bool remove_column(char *database_name, char *table_name, char *column_name){
 		}
 		if (deleted_column_index != -1){//if succes ngehapus
 			strcpy(columns_list[i], columns_list[i + 1]);
+			strcpy(columns_list_type[i], columns_list_type[i + 1]);
 		}
 	}
 
@@ -275,7 +306,7 @@ bool remove_column(char *database_name, char *table_name, char *column_name){
 		}
 	}
 
-	save_local_table(database_name, table_name);
+	dump_local_table(database_name, table_name);
 
 	return true;
 }
@@ -324,11 +355,4 @@ int main(int argc, const char *argv[]) {
 	}
 
 	remove_column("__ROOT__", "__USER__", "stock");
-
-	for (i = 0;i < column_list_size;i++){
-		puts(columns_list[i]);
-	}
-	for (i = 0;i < row_list_size;i++){
-		puts(rows_list[i]);
-	}
 }
