@@ -1,11 +1,23 @@
-database user namanya gini : '__USER__'
+database user namanya gini : '__ROOT__'
+table user namanya gini : '__USER__'
 
-#TabelName
-TabelName
+#Structure
+id:int
+product_name:string
+product_isbn:string
+stock:int
 
 #Data
-id|int|9
-name|string|asdlkajsd
+1|bakso|05193|5
+2|beruang|94151|159
+3|anjing|12481|9003
+4|sealnene|18884|4881
+
+##################################################################################
+
+####### Syafiq #########
+
+#semua yang socket server dan socket client
 
 make_database(name : char*) : bool
 remove_database(name : char*) : bool
@@ -16,12 +28,63 @@ write_table_path(arr : char*, database_name : char*, name : char*) : void
 make_table(database_name : char*, name : char*) : bool
 remove_table(database_name : char*, name : char*) : bool
 
-get_table_name(path : char*) : bool
+get_table_columns(database_name : char*, name : char*) : void
+get_table_row_value(database_name : char*) : char*
 
-search_row_with_name(name : char*) : char*
+######### Jessica ###########
 
-get_row_name(row : char*) : bool
-get_row_type(row : char*) : bool
-get_row_value(row : char*) : bool
+#input seluruh command, output berupa integer mode. 
+-> check_input(full_command : char*) : int #input seluruh command, output berupa integer mode. 
 
+#dari full_command tolong dapetin [nama_user] dan [password_user]
+#format : CREATE USER [nama_user] IDENTIFIED BY [password_user];
+-> create_user_input(full_command : char*) : void
 
+#dari full_command tolong dapetin [nama_datebase]
+#format : USE [nama_database];
+-> use_database_input(full_command : char*) : void
+
+#dari full_command tolong dapetin [nama_datebase] dan [nama_user]
+#format : GRANT PERMISSION [nama_database] INTO [nama_user];
+-> grant_permission_input(full_command : char*) : void
+
+#dari full_command tolong dapetin [nama_datebase]
+#format : CREATE DATABASE [nama_database];
+create_database_input(full_command : char*) : void
+
+#dari full_command tolong dapetin [banyak]
+#format : CREATE TABLE [nama_tabel] ([nama_kolom] [tipe_data], ...);
+create_table_input(full_command : char*) : void
+
+#dari full_command tolong dapetin [banyak]
+#format : DROP [DATABASE | TABLE | COLUMN] [nama_database | nama_tabel | [nama_kolom] FROM [nama_tabel]];
+drop_table_input(full_command : char*) : void
+
+#dari full_command tolong dapetin [banyak]
+#format : INSERT INTO [nama_tabel] ([value], ...);
+insert_table_input(full_command : char*) : void
+
+#dari full_command tolong dapetin [banyak]
+#format : UPDATE [nama_tabel] SET [nama_kolom]=[value];
+update_table_input(full_command : char*) : void
+
+#dari full_command tolong dapetin [banyak]
+#format : DELETE FROM [nama_tabel];
+delete_table_input(full_command : char*) : void
+
+#dari full_command tolong dapetin [banyak]
+#format : SELECT [nama_kolom, … | *] FROM [nama_tabel];
+select_table_input(full_command : char*) : void
+
+#ini sulit, ku belum kepikiran cara ne, skip dulu
+#dari full_command tolong dapetin [banyak]
+#format : [Command UPDATE, SELECT, DELETE] WHERE [nama_kolom]=[value];
+where_table_input(full_command : char*) : void
+
+############ Max #############
+
+#Logging, bikin file terus di logging
+log_command(username : char*, full_command : char*) : void
+
+#Error Handling, sesimple print aja
+show_error(username : char*, full_command : char*, reason : char*) : void
