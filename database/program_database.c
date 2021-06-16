@@ -71,17 +71,17 @@ bool make_directory(char *path){
 	return false;
 }
 
+bool make_file(char *path){
+	FILE *file = fopen(path, "w");
+	fclose(file);
+}
+
 bool remove_directory(char *path){
 	int res = rmdir(path);
 	if(res == -1){
 		return false;
 	}
 	return true;
-}
-
-bool make_file(char *path){
-	FILE *file = fopen(path, "w");
-	fclose(file);
 }
 
 bool remove_file(char *path){
@@ -110,14 +110,6 @@ bool make_database(char *name){
 	return success;
 }
 
-bool remove_database(char *name){
-	char temp[buffersize];
-
-	write_database_path(temp, name);
-
-	bool success = remove_directory(temp);
-}
-
 bool make_table(char *database_name, char *name){
 	char temp[buffersize];
 
@@ -127,6 +119,13 @@ bool make_table(char *database_name, char *name){
 	return success;
 }
 
+bool remove_database(char *name){
+	char temp[buffersize];
+
+	write_database_path(temp, name);
+
+	bool success = remove_directory(temp);
+}
 
 bool remove_table(char *database_name, char *name){
 	char temp[buffersize];
@@ -211,12 +210,94 @@ void get_table_rows(char *database_name, char *table_name) {
 		}
 
 		if (on_data){
-			strncpy(rows_list[column_list_size], token, strlen(token) - 1);
+			strncpy(rows_list[row_list_size], token, strlen(token) - 1);
 			row_list_size++;
 		} else if (strstr(token, "#Data")){
 			on_data = true;
 		}
 	}
+}
+
+void save_local_table(char *database_name, char *table_name){
+	
+}
+
+bool remove_column(char *database_name, char *table_name, char *column_name){
+	get_table_columns(database_name, table_name);
+	get_table_rows(database_name, table_name);
+
+	int deleted_column_index = -1;
+	int i = 0;
+	for (;i < column_list_size;i++){
+		if (strcmp(columns_list[i], column_name) == 0){
+			deleted_column_index = i;
+			column_list_size--;
+			//row_list_size--;
+		}
+		if (deleted_column_index != -1){//if succes ngehapus
+			strcpy(columns_list[i], columns_list[i + 1]);
+		}
+	}
+
+	if (deleted_column_index == -1){
+		return false;
+	}
+
+	i = 0;
+	for (;i < row_list_size;i++){
+		char temprow[buffersize];
+		strcpy(temprow, rows_list[i]);
+		
+		rows_list[i][0] = 0;
+
+		char *token = strtok(temprow, "|");
+		int j = 0;
+	       
+		while (token != NULL){
+			if (j == deleted_column_index){
+				token = strtok(NULL, "|");
+				j++;
+				continue;
+			}
+
+			strcat(rows_list[i], token);
+
+			token = strtok(NULL, "|");
+
+			if (token != NULL){
+				strcat(rows_list[i], "|");
+			}
+			j++;
+		}
+
+		if (rows_list[i][strlen(rows_list[i]) - 1] == '|'){
+			rows_list[i][strlen(rows_list[i]) - 1] = '\0';
+		}
+	}
+
+	save_local_table(database_name, table_name);
+
+	return true;
+}
+
+bool create_database(char *username, char *database_name){
+	make_database(database_name);
+}
+
+bool create_table(char *username, char *database_name, char *table_name){
+	make_table(database_name, table_name);
+}
+
+bool drop_database(char *username, char *database_name){
+	remove_database(database_name);
+}
+
+bool drop_table(char *username, char *database_name, char *table_name){
+	remove_table(database_name, table_name);
+}
+
+bool drop_column(char *username, char *database_name, char *table_name, char *column_name){
+	remove_column(database_name, table_name, column_name);
 }
 
 int main(int argc, const char *argv[]) {
@@ -233,4 +314,21 @@ int main(int argc, const char *argv[]) {
 	
 	get_table_columns("__ROOT__", "__USER__");
 	get_table_rows("__ROOT__", "__USER__");
+
+	int i = 0;
+	for (i = 0;i < column_list_size;i++){
+		puts(columns_list[i]);
+	}
+	for (i = 0;i < row_list_size;i++){
+		puts(rows_list[i]);
+	}
+
+	remove_column("__ROOT__", "__USER__", "stock");
+
+	for (i = 0;i < column_list_size;i++){
+		puts(columns_list[i]);
+	}
+	for (i = 0;i < row_list_size;i++){
+		puts(rows_list[i]);
+	}
 }

@@ -1,0 +1,12 @@
+#Structure
+id:int
+product_name:string
+product_isbn:string
+stock:int
+
+#Data
+1|bakso|05193|5
+2|beruang|94151|159
+3|anjing|12481|9003
+4|sealnene|18884|4881
+
