@@ -1,0 +1,22 @@
+database user namanya gini : '__USER__'
+
+#TabelName
+TabelName
+
+#Data
+id|int|9
+name|string|asdlkajsd
+
+make_database(name : string) : bool
+remove_database(name : string) : bool
+
+make_table(database_name : string, name : string) : bool
+remove_table(database_name : string, name : string) : bool
+
+get_table_name(path : string) : bool
+
+search_row_with_name(name : string) : string
+
+get_row_name(row : string) : bool
+get_row_type(row : string) : bool
+get_row_value(row : string) : bool
