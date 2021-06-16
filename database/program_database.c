@@ -3,7 +3,13 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <dirent.h>
 #include <unistd.h>
+#include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #define PORT 8080
 
 int amain(int argc, char const *argv[]) {
@@ -50,8 +56,54 @@ int amain(int argc, char const *argv[]) {
     return 0;
 }
 
+char *databases_path = "databases";
+int buffersize = 1024;
+
+bool make_directory(char *path){
+	struct stat st = {0};
+
+	if (stat(path, &st) == -1) {
+		mkdir(path, 0700);
+		return true;
+	}
+
+	return false;
+}
+
+bool make_file(char *path){
+	FILE *file = fopen(path, "w");
+	fclose(file);
+}
+
+void write_database_path(char *arr, char *name){
+	sprintf(arr, "%s/%s", databases_path, name);
+}
 
 
-int main(int argc, char const *argv[]){
-	
+void write_table_path(char *arr, char *database_name, char *name){
+	sprintf(arr, "%s/%s/%s", databases_path, database_name, name);
+}
+
+bool make_database(char *name){
+	char temp[buffersize];
+
+	write_database_path(temp, name);
+
+	bool success = make_directory(temp);
+	return success;
+}
+
+bool make_table(char *database_name, char *name){
+	char temp[buffersize];
+
+	write_table_path(temp, database_name, name);
+
+	bool success = make_file(temp);
+	return success;
+}
+
+int main(int argc, const char *argv[]) {
+	make_directory(databases_path);
+	make_database("__ROOT__");
+	make_table("__ROOT__", "__USER__");
 }

@@ -10,6 +10,9 @@ name|string|asdlkajsd
 make_database(name : string) : bool
 remove_database(name : string) : bool
 
+write_database_path(arr : string, name : string) : void
+write_table_path(arr : string, database_name : string, name : string) : void
+
 make_table(database_name : string, name : string) : bool
 remove_table(database_name : string, name : string) : bool
 
