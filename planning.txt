@@ -7,19 +7,21 @@ TabelName
 id|int|9
 name|string|asdlkajsd
 
-make_database(name : string) : bool
-remove_database(name : string) : bool
+make_database(name : char*) : bool
+remove_database(name : char*) : bool
 
-write_database_path(arr : string, name : string) : void
-write_table_path(arr : string, database_name : string, name : string) : void
+write_database_path(arr : char*, name : char*) : void
+write_table_path(arr : char*, database_name : char*, name : char*) : void
 
-make_table(database_name : string, name : string) : bool
-remove_table(database_name : string, name : string) : bool
+make_table(database_name : char*, name : char*) : bool
+remove_table(database_name : char*, name : char*) : bool
 
-get_table_name(path : string) : bool
+get_table_name(path : char*) : bool
 
-search_row_with_name(name : string) : string
+search_row_with_name(name : char*) : char*
 
-get_row_name(row : string) : bool
-get_row_type(row : string) : bool
-get_row_value(row : string) : bool
+get_row_name(row : char*) : bool
+get_row_type(row : char*) : bool
+get_row_value(row : char*) : bool
+
+
