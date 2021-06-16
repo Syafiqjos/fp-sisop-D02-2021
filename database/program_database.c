@@ -58,6 +58,7 @@ int amain(int argc, char const *argv[]) {
 
 char *databases_path = "databases";
 int buffersize = 1024;
+char filebuffer[1024];
 
 bool make_directory(char *path){
 	struct stat st = {0};
@@ -135,11 +136,101 @@ bool remove_table(char *database_name, char *name){
 	bool success = remove_file(temp);
 }
 
-int main(int argc, const char *argv[]) {
-	make_directory(databases_path);
-	make_database("__ROOT__");
-	make_table("__ROOT__", "__USER__");
+char columns_list[128][1024];
+char columns_list_type[128][32];
+int column_list_size = 0;
 
-	remove_table("__ROOT__", "__USER__");
-	remove_database("__ROOT__");
+char rows_list[128][1024];
+char row_list_size = 0;
+
+void get_table_columns(char *database_name, char *table_name) {
+	char temp[buffersize];
+
+	write_table_path(temp, database_name, table_name);
+
+	printf("Table Path : %s\n", temp);
+
+	FILE *file = fopen(temp , "r");
+
+	column_list_size = 0;
+
+	char *token;
+	bool on_structure = false;
+
+	while ((token = fgets(filebuffer, buffersize, file)) != NULL){
+		if (on_structure && *token == '\n'){
+			break;
+		}
+
+		if (on_structure){
+			//printf("%s", token);
+			char *spl = strtok(token, ":");
+			strcpy(columns_list[column_list_size], spl);
+			spl = strtok(NULL, ":");
+			strncpy(columns_list_type[column_list_size], spl, strlen(spl) - 1);
+			column_list_size++;
+		} else if (strstr(token, "#Structure")){
+			on_structure = true;
+		}
+	}
+
+	fclose(file);
+}
+
+char *get_table_column_type(char *database_name, char *table_name, char *column_name){
+	get_table_columns(database_name, table_name);
+
+	int column_index = 0;
+	for (;column_index < column_list_size;column_index++){
+		if (strcmp(columns_list[column_index], column_name) == 0){
+			char *o = malloc(32);
+			strcpy(o, columns_list_type[column_index]);
+			return o;
+		}
+	}
+	return NULL;
+}
+
+void get_table_rows(char *database_name, char *table_name) {
+	char temp[buffersize];
+
+	write_table_path(temp, database_name, table_name);
+
+	printf("Table Path : %s\n", temp);
+
+	FILE *file = fopen(temp , "r");
+
+	row_list_size = 0;
+
+	char *token;
+	bool on_data = false;
+
+	while ((token = fgets(filebuffer, buffersize, file)) != NULL){
+		if (on_data && *token == '\n'){
+			break;
+		}
+
+		if (on_data){
+			strncpy(rows_list[column_list_size], token, strlen(token) - 1);
+			row_list_size++;
+		} else if (strstr(token, "#Data")){
+			on_data = true;
+		}
+	}
+}
+
+int main(int argc, const char *argv[]) {
+	//make_directory(databases_path);
+	//make_database("__ROOT__");
+	//make_table("__ROOT__", "__USER__");
+
+	//remove_table("__ROOT__", "__USER__");
+	//remove_database("__ROOT__");
+	
+	//get_table_columns("__ROOT__", "__USER__");
+	//puts(get_table_column_type("__ROOT__", "__USER__", "product_name"));
+	//
+	
+	get_table_columns("__ROOT__", "__USER__");
+	get_table_rows("__ROOT__", "__USER__");
 }
