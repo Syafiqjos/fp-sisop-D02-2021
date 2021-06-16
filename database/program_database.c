@@ -70,9 +70,25 @@ bool make_directory(char *path){
 	return false;
 }
 
+bool remove_directory(char *path){
+	int res = rmdir(path);
+	if(res == -1){
+		return false;
+	}
+	return true;
+}
+
 bool make_file(char *path){
 	FILE *file = fopen(path, "w");
 	fclose(file);
+}
+
+bool remove_file(char *path){
+	int res = unlink(path);
+	if (res == -1){
+		return false;
+	}
+	return true;
 }
 
 void write_database_path(char *arr, char *name){
@@ -93,6 +109,14 @@ bool make_database(char *name){
 	return success;
 }
 
+bool remove_database(char *name){
+	char temp[buffersize];
+
+	write_database_path(temp, name);
+
+	bool success = remove_directory(temp);
+}
+
 bool make_table(char *database_name, char *name){
 	char temp[buffersize];
 
@@ -102,8 +126,20 @@ bool make_table(char *database_name, char *name){
 	return success;
 }
 
+
+bool remove_table(char *database_name, char *name){
+	char temp[buffersize];
+
+	write_table_path(temp, database_name, name);
+
+	bool success = remove_file(temp);
+}
+
 int main(int argc, const char *argv[]) {
 	make_directory(databases_path);
 	make_database("__ROOT__");
 	make_table("__ROOT__", "__USER__");
+
+	remove_table("__ROOT__", "__USER__");
+	remove_database("__ROOT__");
 }
