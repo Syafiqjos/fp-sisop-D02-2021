@@ -28,8 +28,24 @@ write_table_path(arr : char*, database_name : char*, name : char*) : void
 make_table(database_name : char*, name : char*) : bool
 remove_table(database_name : char*, name : char*) : bool
 
-get_table_columns(database_name : char*, name : char*) : void
-get_table_row_value(database_name : char*) : char*
+get_table_columns(database_name : char*, table_name : char*) : void
+get_table_column_type(database_name : char*, table_name : char*, column_name : char*) : int
+get_table_column_value_as_int(database_name : char*, table_name : char*, column_name : char*) : int
+get_table_column_value_as_string(database_name : char*, table_name : char*, column_name : char*) : char*
+
+create_user(username : char*, password : char*) : bool #success
+use_database(username : char*, database_name : char*) : bool #success
+grant_permission(username : char*, database_name : char*, granted_username : char*) : bool #success
+create_database(username : char*, database_name : char*) : bool
+create_table(username : char*, database_name : char*, table_name : char*) : bool
+drop_table(username : char*, database_name : char*, table_name : char*) : bool
+delete_table(username : char*, database_name : char*, table_name : char*) : bool
+# insert_table #bengung
+# update_table #bengung
+# select_table #bengung
+# where_table #bengung
+
+login(username : char*, password : char*) : bool
 
 ######### Jessica ###########
 
