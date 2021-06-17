@@ -1,0 +1,10 @@
+#Structure
+username:string
+password:int
+
+#Data
+syafiq|123456
+kadal|kadal
+member|member
+client|client
+

@@ -311,6 +311,66 @@ bool remove_column(char *database_name, char *table_name, char *column_name){
 	return true;
 }
 
+char current_database[1024];
+char current_client[1024];
+
+bool is_logined = false;
+
+void client_logout(){
+	is_logined = false;
+	current_database[0] = 0;
+	current_client[0] = 0;
+}
+
+bool client_login(char *username, char *password){
+	client_logout();
+
+	get_table_columns("__ROOT__", "__USER__");
+	get_table_rows("__ROOT__", "__USER__");
+
+	char *tempusername;
+	char *temppassword;
+
+	int i;
+	for (i = 0;i < row_list_size;i++){
+		tempusername = strtok(rows_list[i], "|");
+		temppassword = strtok(NULL, "|");
+
+		if (strcmp(tempusername, username) == 0 && strcmp(temppassword, password) == 0){
+			strcpy(current_client, username);
+
+			is_logined = true;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool use_database(char *username, char *database_name) {
+	strcpy(current_database, database_name);
+	
+	get_table_columns("__ROOT__", "__DATABASE__");
+	get_table_rows("__ROOT__", "__DATABASE__");
+
+	char *tempusername;
+	char *tempdatabase;
+
+	int i;
+	for (i = 0;i < row_list_size;i++){
+		tempusername = strtok(rows_list[i], "|");
+		tempdatabase = strtok(NULL, "|");
+
+		if (strcmp(tempusername, current_client) == 0 && strcmp(tempdatabase, database_name) == 0){
+			strcpy(current_database, database_name);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool create_database(char *username, char *database_name){
 	make_database(database_name);
 }
@@ -332,27 +392,11 @@ bool drop_column(char *username, char *database_name, char *table_name, char *co
 }
 
 int main(int argc, const char *argv[]) {
-	//make_directory(databases_path);
-	//make_database("__ROOT__");
-	//make_table("__ROOT__", "__USER__");
+	make_directory(databases_path);
+	make_database("__ROOT__");
+	make_table("__ROOT__", "__USER__"); //user login password relation
+	make_table("__ROOT__", "__DATABASE__"); //user and database relation
 
-	//remove_table("__ROOT__", "__USER__");
-	//remove_database("__ROOT__");
-	
-	//get_table_columns("__ROOT__", "__USER__");
-	//puts(get_table_column_type("__ROOT__", "__USER__", "product_name"));
-	//
-	
 	get_table_columns("__ROOT__", "__USER__");
 	get_table_rows("__ROOT__", "__USER__");
-
-	int i = 0;
-	for (i = 0;i < column_list_size;i++){
-		puts(columns_list[i]);
-	}
-	for (i = 0;i < row_list_size;i++){
-		puts(rows_list[i]);
-	}
-
-	remove_column("__ROOT__", "__USER__", "stock");
 }
