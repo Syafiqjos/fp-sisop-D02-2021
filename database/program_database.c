@@ -391,6 +391,229 @@ bool drop_column(char *username, char *database_name, char *table_name, char *co
 	remove_column(database_name, table_name, column_name);
 }
 
+bool create_user_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+	char * third = strtok(NULL, s);
+	char * fourth = strtok(NULL, s);
+	char * fifth = strtok(NULL, s);
+	char * sixth = strtok(NULL, s);
+
+	if(!strcmp(first, "CREATE")){
+		if(!strcmp(second, "USER")){
+			if(!strcmp(fourth, "IDENTIFIED")){
+				if(!strcmp(fifth, "BY")){
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool use_database_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+
+	if(!strcmp(first, "USE")){
+		//function use database(second)
+		return true;
+	}
+	return false;
+}
+
+bool grant_permission_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+	char * third = strtok(NULL, s);
+
+	if(!strcmp(first, "GRANT")){
+		if(!strcmp(second, "PERMISSION")){
+			//function grant permission (third)
+			return true;
+		}
+	}
+	return false;
+}
+
+bool create_database_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+	char * third = strtok(NULL, s);
+
+	if(!strcmp(first, "CREATE")){
+		if(!strcmp(second, "DATABASE")){
+			//function create database (third)
+			return true;
+		}
+	}
+	return false;
+}
+
+bool create_table_input(char* full_command){
+    char str [1000];
+    sprintf(str, "%s", full_command);
+    const char s[2] = " ";
+    char * first = strtok(str, s);
+    char * second = strtok(NULL, s);
+    char * third = strtok(NULL, s);
+
+    if(!strcmp(first, "CREATE")){
+        if(!strcmp(second, "TABLE")){
+            //function create table (third)
+            return true;
+        }
+    }
+    return false;
+}
+
+bool drop_table_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+	char * third = strtok(NULL, s);
+
+	if(!strcmp(first, "DROP")){
+		if(!strcmp(second, "DATABASE")){
+			//function drop database (third)
+			return true;
+		}
+		else if(!strcmp(second, "TABLE")){
+			//function drop table (third)
+			return true;
+		}
+		else if(!strcmp(second, "COLUMN")){
+			//function drop column (third)
+			return true;
+		}
+	}
+	return false;
+}
+
+bool insert_table_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+	char * third = strtok(NULL, s);
+
+	if(!strcmp(first, "INSERT")){
+		if(!strcmp(second, "INTO")){
+			//function insert into (third)
+			return true;
+		}
+	}
+	return false;
+}
+
+bool update_table_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+	char * third = strtok(NULL, s);
+	char * fourth = strtok(NULL, s);
+
+	if(!strcmp(first, "UPDATE")){
+		if(!strcmp(third, "SET")){
+			//second = nama tabel
+			//fourth = isi update an nya
+			//function update tabel (third)
+			return true;
+		}
+	}
+	return false;
+}
+
+bool delete_table_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+	char * third = strtok(NULL, s);
+
+	if(!strcmp(first, "DELETE")){
+		if(!strcmp(second, "FROM")){
+			//function delete (third)
+			return true;
+		}
+	}
+	return false;
+}
+
+bool select_table_input(char* full_command){
+	char str [1000];
+	sprintf(str, "%s", full_command);
+	const char s[2] = " ";
+	char * first = strtok(str, s);
+	char * second = strtok(NULL, s);
+	char * third = strtok(NULL, s);
+	char * fourth = strtok(NULL, s);
+
+	if(!strcmp(first, "SELECT")){
+		if(!strcmp(third, "FROM")){
+			//second = nama kolom
+			//fourth = nama tabel
+			//function select (second, fourth(?))
+			//bebas parameternya apa
+			return true;
+		}
+	}
+	return false;
+}
+
+int check_input (char* full_command){
+	char* input[1000];
+	scanf("%s", input);
+	if (create_user_input(input)){
+
+	}
+	else if(use_database_input(input)){
+	
+	}
+	else if(grant_permission_input(input)){
+	
+	}
+	else if(create_database_input(input)){
+		
+	}
+	else if(create_table_input(input)){
+		
+	}
+	else if(drop_table_input(input)){
+		
+	}
+	else if(insert_table_input(input)){
+		
+	}
+	else if(update_table_input(input)){
+
+	}
+	else if(delete_table_input(input)){
+
+	}
+	else if(select_table_input(input)){
+		
+	}
+}
+
 int main(int argc, const char *argv[]) {
 	make_directory(databases_path);
 	make_database("__ROOT__");
