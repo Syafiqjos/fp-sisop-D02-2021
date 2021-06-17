@@ -1,0 +1,13 @@
+int log_command(char *username, char *full_command){
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char mains[1000];
+  sprintf(mains,"timestamp(%02d-%02d-%02d%02d:%02d:%02d)%s:%s\n",
+	1900 + tm.tm_year, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, username, full_command);
+    }
+	printf("%s", mains);
+	FILE *foutput = fopen(log_path, "a+");
+	fputs(mains, foutput);
+	fclose(foutput);
+	return 1;
+}
