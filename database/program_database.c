@@ -466,8 +466,8 @@ bool insert_into(char *username, char *database_name, char *table_name, char val
 
 		if (strcmp(columns_list_type[i], "string") == 0){
 			if (*token == '\'' && strstr(token+1, "\'")){
-				//token++;
-				//*strstr(token, "\'") = 0;
+				token++;
+				*strstr(token, "\'") = 0;
 				//biarin, bener
 			} else {
 				printf("string gak cocok int\n");
@@ -818,7 +818,8 @@ int initial() {
 	get_table_columns("__ROOT__", "__USER__");
 	get_table_rows("__ROOT__", "__USER__");
 
-	create_user_input("CREATE USER gajah IDENTIFIED BY gajahjuga");
+
+
 }
 
 void prepare_socket(){	
@@ -856,16 +857,27 @@ void prepare_socket(){
 int main(int argc, char const *argv[]) {
 	//prepare_socket();
 
-	//initial();
+	initial();
+
+	uid_t uid = getuid();
+	uid_t euid = geteuid();
+
+	if (euid != 0){
+		puts("REGULAR");
+	} else {
+		puts("ROOT");
+	}
 
 	//printf("Waiting connection..\n");
 	
+	//create_user_input("CREATE USER gajah IDENTIFIED BY gajahjuga");
+
 	//check_input("CREATE DATABASE UNTA;");
 	//check_input("USE DATABASE UNTA;");
-	strcpy(current_database,"UNTA");
+	//strcpy(current_database,"UNTA");
 	//check_input("CREATE TABLE SAPI (kolom1 int, kolom2 string, kolom3 string, kolom4 int);");
 
-	check_input("INSERT INTO SAPI (1, 'segitiga', 'mulai', 9);");
+	//check_input("INSERT INTO SAPI (1, 'segitiga', 'mulai', 9);");
 
 	return 0;
 }
