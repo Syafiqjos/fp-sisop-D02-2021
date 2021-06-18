@@ -255,8 +255,10 @@ void get_table_rows(char *database_name, char *table_name) {
 	char *token;
 	bool on_data = false;
 
+	printf("Rowsing\n");
+
 	while ((token = fgets(filebuffer, buffersize, file)) != NULL){
-		if (on_data && *token == '\n'){
+		if (on_data && (*token == '\n' || *token == 0)){
 			break;
 		}
 
@@ -268,6 +270,8 @@ void get_table_rows(char *database_name, char *table_name) {
 			on_data = true;
 		}
 	}
+
+	printf("Selesai rowsing\n");
 }
 
 void dump_local_table(char *database_name, char *table_name){
@@ -331,6 +335,7 @@ bool remove_column(char *database_name, char *table_name, char *column_name){
 		strcpy(temprow, rows_list[i]);
 		
 		rows_list[i][0] = 0;
+		memset(rows_list[i], 0, 1024);
 
 		char *token = strtok(temprow, "|");
 		int j = 0;
@@ -515,6 +520,95 @@ bool insert_into(char *username, char *database_name, char *table_name, char val
 	fwrite(content, 1, strlen(content), file);
 
 	fclose(file);
+
+	return true;
+}
+
+bool update_table(char *username, char *database_name, char *table_name, char *key, char *value, char *where, char *where_key, char *where_value){
+	printf("%s -> %s\n", database_name, table_name);
+
+	get_table_columns(database_name, table_name);
+	get_table_rows(database_name, table_name);
+
+	printf("Prepare update\n");
+
+	int i = 0;
+
+	int column_to_be_changed = -1;
+	int column_on_where = -1;
+
+	for (i = 0;i < column_list_size;i++){
+		printf("%s -> %s\n", key, columns_list[i]);
+		if (strcmp(key, columns_list[i]) == 0){
+			column_to_be_changed = i;
+		}
+		if (where != NULL && strcmp(where_key, columns_list[i]) == 0){
+			column_on_where = i;
+		}
+	}
+
+	printf("Updating\n");
+
+	if (column_to_be_changed == -1){
+		printf("No Column exist\n");
+		return false;
+	}
+
+	if (where != NULL && column_on_where != -1){
+		printf("No Where Column exist\n");
+		return false;
+	}
+
+
+	for (i = 0;i < row_list_size;i++){
+		char temprow[buffersize];
+		strcpy(temprow, rows_list[i]);
+		
+		rows_list[i][0] = 0;
+		memset(rows_list[i], 0, 1024);
+
+		char *token = strtok(temprow, "|");
+		int j = 0;
+
+		bool changed = false;
+	       
+		while (token != NULL){
+			printf("TOKEN : %s -> %s\n", token, where_value);
+			if (j == column_on_where && strcmp(token, where_value) == 0){
+				changed = true;
+			}
+
+			if (j == column_to_be_changed){
+				strcat(rows_list[i], value);
+			} else {
+				strcat(rows_list[i], token);
+			}
+
+			token = strtok(NULL, "|");
+
+			if (token != NULL){
+				strcat(rows_list[i], "|");
+			}
+			j++;
+		}
+
+		if (where == NULL){
+			//biarin, bakal diganti
+		} else if (where != NULL && changed){
+			//biarin, bakal diganti
+		} else if (where != NULL && !changed){
+			memset(rows_list[i], 0, 1024);
+			strcpy(rows_list[i], temprow);
+		}
+
+		if (rows_list[i][strlen(rows_list[i]) - 1] == '|'){
+			rows_list[i][strlen(rows_list[i]) - 1] = '\0';
+		}
+	}
+
+	printf("dumping update..\n");
+
+	dump_local_table(database_name, table_name);
 
 	return true;
 }
@@ -744,13 +838,35 @@ bool update_table_input(char* full_command){
 	char * first = strtok(str, s);
 	char * second = strtok(NULL, s);
 	char * third = strtok(NULL, s);
-	char * fourth = strtok(NULL, s);
+	char * fourtheq = strtok(NULL, s);
+	char * fourth = strtok(fourtheq, "=");
+	char * fifth = strtok(NULL, "=");
+	//where
+	sprintf(str, "%s", full_command);
+	char * sixth = strtok(str, " ");
+	sixth = strtok(NULL, " ");
+	sixth = strtok(NULL, " ");
+	sixth = strtok(NULL, " ");
+	sixth = strtok(NULL, " ");
+	char * seventheq = strtok(NULL, " ");
+	char * seventh = strtok(seventheq, "="); //key
+	char * eight = strtok(NULL, "="); //value
+
+	printf("Mau ngupdate\n");
+
+	printf("%s -> %s -> %s\n", sixth, seventh, eight);
 
 	if(!strcmp(first, "UPDATE")){
 		if(!strcmp(third, "SET")){
 			//second = nama tabel
 			//fourth = isi update an nya
 			//function update tabel (third)
+			if (strstr(full_command, "=")) {
+				printf("Update strstr\n");
+				update_table(current_client, current_database, second, fourth, fifth, sixth, seventh, eight);
+			} else {
+				printf("Syntax error : No =\n");
+			}
 		}
 		return true;
 	}
@@ -924,9 +1040,12 @@ int main(int argc, char const *argv[]) {
 	check_input("INSERT INTO KUCING (2, 'Any', 3);");
 	check_input("INSERT INTO KUCING (3, 'Liza', 2);");
 
-	check_input("DROP COLUMN nama FROM KUCING;");
+	//check_input("DROP COLUMN nama FROM KUCING;");
 	//check_input("DROP TABLE KUCING;");
 	//check_input("DROP DATABASE BINATANG;");
+	
+	check_input("UPDATE KUCING SET usia=10;");
+	check_input("UPDATE KUCING SET usia=20 WHERE id=2;");
 
 	return 0;
 }
