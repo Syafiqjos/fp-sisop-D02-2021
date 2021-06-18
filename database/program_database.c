@@ -967,7 +967,7 @@ int check_input (char *inp){
 	int len = strlen(input);
 
 	if (input[len - 1] != ';'){
-		puts("syntax error no ;");
+		log_output("syntax error no ;\n");
 		return 0;
 	}
 
@@ -1000,6 +1000,8 @@ int check_input (char *inp){
 	else if(select_table_input(input)){
 		puts("select table");
 	}
+
+	log_output("Command not Exist\n");
 
 	return 0;
 }
@@ -1049,16 +1051,6 @@ void prepare_socket(){
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
-
-    if (listen(server_fd, 3) < 0) {
-        perror("listen");
-        exit(EXIT_FAILURE);
-    }
-
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
 }
 
 void debug_only(){	
@@ -1082,23 +1074,45 @@ void debug_only(){
 
 // Server
 int main(int argc, char const *argv[]) {
+	
+	
 	prepare_socket();
 
 	initial();
 
 	char input[1024];
 
-	printf("Waiting connection..\n");
-
+	
 	while (true){
-		receive_message();
-		strcpy(input, receivebuffer);
+		printf("Waiting connection..\n");
+		if (listen(server_fd, 3) < 0) { 
+			perror("listen");
+			exit(EXIT_FAILURE);
+	    	}
+    		
+		if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) {
+		        perror("accept");
+		        exit(EXIT_FAILURE);
+		    }
 
-		memset(sendbuffer, 0, 1024);
+		printf("Connected.\n");
 
-		check_input(input);
+		while (true){
+			receive_message();
+			strcpy(input, receivebuffer);
+	
+			memset(sendbuffer, 0, 1024);
 
-		send_message(sendbuffer);
+			if (strcmp(input, "EXIT") == 0){
+				break;
+			}
+
+			check_input(input);
+
+			send_message(sendbuffer);
+		}
+
+		printf("Exitting connection.\n");
 	}
 
 	/*

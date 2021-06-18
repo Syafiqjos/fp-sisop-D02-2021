@@ -69,9 +69,15 @@ int main(int argc, char const *argv[]) {
 
 	while (true){
 		scanf(" %[^\n]", sendbuffer);
+
+		if (strcmp(sendbuffer, "EXIT") == 0){
+			return 0;
+		}
+
 		send_message(sendbuffer);
 		receive_message();
 		printf("%s", receivebuffer);
+		
 	}
 
 	return 0;
