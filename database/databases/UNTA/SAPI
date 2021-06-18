@@ -5,3 +5,9 @@ kolom3:string
 kolom4:int
 
 #Data
+1| 'segitiga'| 'mulai'| 9)
+1|'segitiga'|'mulai'|9)
+1|'segitiga'|'mulai'|9
+1|'segitiga'|'mulai'|9
+1|'segitiga'|'mulai'|9
+1|segitiga|mulai|9

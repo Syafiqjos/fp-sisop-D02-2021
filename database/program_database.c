@@ -442,7 +442,7 @@ bool drop_column(char *username, char *database_name, char *table_name, char *co
 	return remove_column(database_name, table_name, column_name);
 }
 
-bool insert_into(char *username, char *database_name, char *table_name, char **values, int column_length){
+bool insert_into(char *username, char *database_name, char *table_name, char values[128][256], int column_length){
 	get_table_columns(database_name, table_name);
 	
 	if (column_length != column_list_size){
@@ -461,6 +461,26 @@ bool insert_into(char *username, char *database_name, char *table_name, char **v
 	int i = 0;
 	for (;i < column_length;i++){
 		char * token = values[i];
+
+		printf("%s -> %s\n", columns_list_type[i], token);
+
+		if (strcmp(columns_list_type[i], "string") == 0){
+			if (*token == '\'' && strstr(token+1, "\'")){
+				//token++;
+				//*strstr(token, "\'") = 0;
+				//biarin, bener
+			} else {
+				printf("string gak cocok int\n");
+				return false;
+			}
+		} else if (strcmp(columns_list_type[i], "int") == 0){
+			if (*token >= '0' && *token <= '9'){
+				//biarin, bener
+			} else {
+				printf("int gak cocok string\n");
+				return false;
+			}
+		}
 
 		strcat(content, token);
 
@@ -638,23 +658,45 @@ bool insert_table_input(char* full_command){
 
 	if(!strcmp(first, "INSERT")){
 		if(!strcmp(second, "INTO")){
-			char *command = strstr(full_command, "(");
+			char *com = strstr(full_command, "(");
 
-			if (command && *command == '('){
-				command++;
+			if (com && *com == '('){
+				com++;
 
-				char *values[256];
+				char command[1024];
+
+				strcpy(command, com);
+
+				char values[128][256];
 				int column_length = 0;
+
+				printf("insert tbbbb\n");
 
 				char * token = strtok(command, ",");
 
+				printf("insert lagi\n");
+
 				while (token != NULL){
-					strcpy(values[column_length++], token);
+					while (*token == ' ') token++;
+
+					strcpy(values[column_length], token);
+
+					if (values[column_length][strlen(values[column_length])-1] == ')'){	
+						values[column_length][strlen(values[column_length])-1] = 0;
+					}
+
+					puts(values[column_length]);
+
+					column_length++;
 
 					token = strtok(NULL, ",");
 				}
 
-				return insert_into(current_client, current_database, third, values, column_length);
+				printf("sudah\n");
+
+				insert_into(current_client, current_database, third, values, column_length);
+
+				return true;
 			}
 			return true;
 		}
@@ -730,6 +772,7 @@ int check_input (char *inp){
 	int len = strlen(input);
 
 	if (input[len - 1] != ';'){
+		puts("syntax error no ;");
 		return 0;
 	}
 
@@ -751,7 +794,7 @@ int check_input (char *inp){
 		puts("drop input");
 	}
 	else if(insert_table_input(input)){
-		puts("inser table");
+		puts("insert table");
 	}
 	else if(update_table_input(input)){
 		puts("update table");
@@ -817,10 +860,12 @@ int main(int argc, char const *argv[]) {
 
 	//printf("Waiting connection..\n");
 	
-	check_input("CREATE DATABASE UNTA;");
+	//check_input("CREATE DATABASE UNTA;");
 	//check_input("USE DATABASE UNTA;");
 	strcpy(current_database,"UNTA");
-	check_input("CREATE TABLE SAPI (kolom1 int, kolom2 string, kolom3 string, kolom4 int);");
+	//check_input("CREATE TABLE SAPI (kolom1 int, kolom2 string, kolom3 string, kolom4 int);");
+
+	check_input("INSERT INTO SAPI (1, 'segitiga', 'mulai', 9);");
 
 	return 0;
 }
