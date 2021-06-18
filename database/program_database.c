@@ -371,28 +371,37 @@ bool use_database(char *username, char *database_name) {
 	return false;
 }
 
+bool create_user(char *username, char *password){
+	printf("%s -> %s\n", username, password);
+	return false;
+}
+
+bool grant_permission(char *username, char *granted_user, char *database_name){
+	return false;
+}
+
 bool create_database(char *username, char *database_name){
-	make_database(database_name);
+	return make_database(database_name);
 }
 
 bool create_table(char *username, char *database_name, char *table_name){
-	make_table(database_name, table_name);
+	return make_table(database_name, table_name);
 }
 
 bool drop_database(char *username, char *database_name){
-	remove_database(database_name);
+	return remove_database(database_name);
 }
 
 bool drop_table(char *username, char *database_name, char *table_name){
-	remove_table(database_name, table_name);
+	return remove_table(database_name, table_name);
 }
 
 bool drop_column(char *username, char *database_name, char *table_name, char *column_name){
-	remove_column(database_name, table_name, column_name);
+	return remove_column(database_name, table_name, column_name);
 }
 
 bool create_user_input(char* full_command){
-	char str [1000];
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
@@ -406,16 +415,17 @@ bool create_user_input(char* full_command){
 		if(!strcmp(second, "USER")){
 			if(!strcmp(fourth, "IDENTIFIED")){
 				if(!strcmp(fifth, "BY")){
-					return true;
+					create_user(third, sixth);
 				}
 			}
 		}
+		return true;
 	}
 	return false;
 }
 
 bool use_database_input(char* full_command){
-	char str [1000];
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
@@ -423,30 +433,35 @@ bool use_database_input(char* full_command){
 
 	if(!strcmp(first, "USE")){
 		//function use database(second)
+		use_database(current_client, second);
 		return true;
 	}
 	return false;
 }
 
 bool grant_permission_input(char* full_command){
-	char str [1000];
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
 	char * second = strtok(NULL, s);
 	char * third = strtok(NULL, s);
+	char * fourth = strtok(NULL, s);
+	char * fifth = strtok(NULL, s);
 
 	if(!strcmp(first, "GRANT")){
 		if(!strcmp(second, "PERMISSION")){
-			//function grant permission (third)
-			return true;
+			if (!strcmp(fourth, "INTO")){
+				grant_permission(current_client, third, fifth);
+			}
 		}
+		return true;
 	}
 	return false;
 }
 
-bool create_database_input(char* full_command){
-	char str [1000];
+bool create_input(char* full_command){
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
@@ -455,57 +470,48 @@ bool create_database_input(char* full_command){
 
 	if(!strcmp(first, "CREATE")){
 		if(!strcmp(second, "DATABASE")){
-			//function create database (third)
-			return true;
+			create_database(current_client, third);
 		}
+		else if(!strcmp(second, "TABLE")){
+			//function create database (third)
+		}
+		return true;
 	}
 	return false;
 }
 
-bool create_table_input(char* full_command){
-    char str [1000];
-    sprintf(str, "%s", full_command);
-    const char s[2] = " ";
-    char * first = strtok(str, s);
-    char * second = strtok(NULL, s);
-    char * third = strtok(NULL, s);
-
-    if(!strcmp(first, "CREATE")){
-        if(!strcmp(second, "TABLE")){
-            //function create table (third)
-            return true;
-        }
-    }
-    return false;
-}
-
-bool drop_table_input(char* full_command){
-	char str [1000];
+bool drop_input(char* full_command){
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
 	char * second = strtok(NULL, s);
-	char * third = strtok(NULL, s);
+	char * third = strtok(NULL, s); //nama
+	char * fourth = strtok(NULL, s); //FROM
+	char * fifth = strtok(NULL, s); //nama table
 
 	if(!strcmp(first, "DROP")){
 		if(!strcmp(second, "DATABASE")){
 			//function drop database (third)
-			return true;
+			drop_database(current_client, third);
 		}
 		else if(!strcmp(second, "TABLE")){
 			//function drop table (third)
-			return true;
+			drop_table(current_client, current_database, third);
 		}
 		else if(!strcmp(second, "COLUMN")){
 			//function drop column (third)
-			return true;
+			if (!strcmp(fifth, "FROM")){
+				drop_column(current_client, current_database, fifth, third);
+			}
 		}
+		return true;
 	}
 	return false;
 }
 
 bool insert_table_input(char* full_command){
-	char str [1000];
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
@@ -515,14 +521,14 @@ bool insert_table_input(char* full_command){
 	if(!strcmp(first, "INSERT")){
 		if(!strcmp(second, "INTO")){
 			//function insert into (third)
-			return true;
 		}
+		return true;
 	}
 	return false;
 }
 
 bool update_table_input(char* full_command){
-	char str [1000];
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
@@ -535,14 +541,14 @@ bool update_table_input(char* full_command){
 			//second = nama tabel
 			//fourth = isi update an nya
 			//function update tabel (third)
-			return true;
 		}
+		return true;
 	}
 	return false;
 }
 
 bool delete_table_input(char* full_command){
-	char str [1000];
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
@@ -552,14 +558,14 @@ bool delete_table_input(char* full_command){
 	if(!strcmp(first, "DELETE")){
 		if(!strcmp(second, "FROM")){
 			//function delete (third)
-			return true;
 		}
+		return true;
 	}
 	return false;
 }
 
 bool select_table_input(char* full_command){
-	char str [1000];
+	char str [1024];
 	sprintf(str, "%s", full_command);
 	const char s[2] = " ";
 	char * first = strtok(str, s);
@@ -573,14 +579,16 @@ bool select_table_input(char* full_command){
 			//fourth = nama tabel
 			//function select (second, fourth(?))
 			//bebas parameternya apa
-			return true;
 		}
+		return true;
 	}
 	return false;
 }
 
-int check_input (char* full_command){
-	char* input[1000];
+//kurang yang where, probably
+
+int check_input (){
+	char input[1024];
 	scanf("%s", input);
 	if (create_user_input(input)){
 
@@ -591,13 +599,10 @@ int check_input (char* full_command){
 	else if(grant_permission_input(input)){
 	
 	}
-	else if(create_database_input(input)){
+	else if(create_input(input)){
 		
 	}
-	else if(create_table_input(input)){
-		
-	}
-	else if(drop_table_input(input)){
+	else if(drop_input(input)){
 		
 	}
 	else if(insert_table_input(input)){
@@ -612,6 +617,8 @@ int check_input (char* full_command){
 	else if(select_table_input(input)){
 		
 	}
+
+	return 0;
 }
 
 int main(int argc, const char *argv[]) {
@@ -622,4 +629,6 @@ int main(int argc, const char *argv[]) {
 
 	get_table_columns("__ROOT__", "__USER__");
 	get_table_rows("__ROOT__", "__USER__");
+
+	create_user_input("CREATE USER gajah IDENTIFIED BY gajahjuga");
 }
