@@ -554,7 +554,7 @@ bool update_table(char *username, char *database_name, char *table_name, char *k
 		return false;
 	}
 
-	if (where != NULL && column_on_where != -1){
+	if (where != NULL && column_on_where == -1){
 		printf("No Where Column exist\n");
 		return false;
 	}
@@ -562,7 +562,10 @@ bool update_table(char *username, char *database_name, char *table_name, char *k
 
 	for (i = 0;i < row_list_size;i++){
 		char temprow[buffersize];
+		char temprow2[buffersize];
+		
 		strcpy(temprow, rows_list[i]);
+		strcpy(temprow2, rows_list[i]);
 		
 		rows_list[i][0] = 0;
 		memset(rows_list[i], 0, 1024);
@@ -573,7 +576,7 @@ bool update_table(char *username, char *database_name, char *table_name, char *k
 		bool changed = false;
 	       
 		while (token != NULL){
-			printf("TOKEN : %s -> %s\n", token, where_value);
+			//printf("TOKEN : %s -> %s\n", token, where_value);
 			if (j == column_on_where && strcmp(token, where_value) == 0){
 				changed = true;
 			}
@@ -598,7 +601,7 @@ bool update_table(char *username, char *database_name, char *table_name, char *k
 			//biarin, bakal diganti
 		} else if (where != NULL && !changed){
 			memset(rows_list[i], 0, 1024);
-			strcpy(rows_list[i], temprow);
+			strcpy(rows_list[i], temprow2);
 		}
 
 		if (rows_list[i][strlen(rows_list[i]) - 1] == '|'){
@@ -839,7 +842,9 @@ bool update_table_input(char* full_command){
 	char * second = strtok(NULL, s);
 	char * third = strtok(NULL, s);
 	char * fourtheq = strtok(NULL, s);
-	char * fourth = strtok(fourtheq, "=");
+	char tempp[1024];
+	strcpy(tempp, fourtheq);
+	char * fourth = strtok(tempp, "=");
 	char * fifth = strtok(NULL, "=");
 	//where
 	sprintf(str, "%s", full_command);
@@ -854,6 +859,7 @@ bool update_table_input(char* full_command){
 
 	printf("Mau ngupdate\n");
 
+	printf("%s -> %s -> %s\n", fourtheq, fourth, fifth);
 	printf("%s -> %s -> %s\n", sixth, seventh, eight);
 
 	if(!strcmp(first, "UPDATE")){
@@ -865,7 +871,7 @@ bool update_table_input(char* full_command){
 				printf("Update strstr\n");
 				update_table(current_client, current_database, second, fourth, fifth, sixth, seventh, eight);
 			} else {
-				printf("Syntax error : No =\n");
+				printf("Syntax error : No =(equal sign)\n");
 			}
 		}
 		return true;
