@@ -96,6 +96,42 @@ bool make_table(char *database_name, char *name){
 	return success;
 }
 
+bool make_table_columns(char *database_name, char *table_name, char **columns, int column_length){
+	if (column_length <= 0){
+		return false;
+	}
+
+	char *temp[buffersize];
+	
+	write_table_path(temp, database_name, name);
+
+	FILE *file = fopen(temp ,'w');
+
+	char content[buffersize] = { 0 };
+
+	strcpy(content, "#Structure\n");
+
+	int i = 0;
+	for (;i < column_length;i++){
+		char * token = columns[i];
+		while (*token == ' ' || *token == '\0') token++;
+
+		char *first = strtok(token," ");
+		char *second = strtok(NULL, " ");
+
+		strcpy(content, first);
+		strcpy(content, "|");
+		strcpy(content, second);
+		strcpy("\n");
+	}
+
+	fwrite(content, 1, buffersize, file);
+
+	fclose(file);
+
+	return true;
+}
+
 bool remove_database(char *name){
 	char temp[buffersize];
 
@@ -355,8 +391,13 @@ bool create_database(char *username, char *database_name){
 	return make_database(database_name);
 }
 
-bool create_table(char *username, char *database_name, char *table_name){
-	return make_table(database_name, table_name);
+bool create_table(char *username, char *database_name, char *table_name, char **columns, int column_length){
+	bool flag = make_table(database_name, table_name);
+	if (flag == false){
+		return false;
+	}
+
+	return make_table_columns(database_name, table_name, columns, column_length);
 }
 
 bool drop_database(char *username, char *database_name){
@@ -369,6 +410,10 @@ bool drop_table(char *username, char *database_name, char *table_name){
 
 bool drop_column(char *username, char *database_name, char *table_name, char *column_name){
 	return remove_column(database_name, table_name, column_name);
+}
+
+bool insert_into(char *username, char *database_name, char *table_name, char **values){
+	
 }
 
 bool create_user_input(char* full_command){
@@ -438,13 +483,31 @@ bool create_input(char* full_command){
 	char * first = strtok(str, s);
 	char * second = strtok(NULL, s);
 	char * third = strtok(NULL, s);
+	char * fourth = strtok(NULL, s);
 
 	if(!strcmp(first, "CREATE")){
 		if(!strcmp(second, "DATABASE")){
 			create_database(current_client, third);
 		}
 		else if(!strcmp(second, "TABLE")){
-			//function create database (third)
+			char *command = strstr(full_command, "(");
+
+			if (command && *command == '('){
+				command++;
+
+				char columns[128][256];
+				int column_length = 0;
+
+				char * token = strtok(command, ",");
+
+				while (token != NULL){
+					strcpy(columns[column_length++], token);
+
+					token = strtok(NULL, ",");
+				}
+
+				return create_table(current_client, current_database, third, columns, column_length);
+			}
 		}
 		return true;
 	}
@@ -487,11 +550,13 @@ bool insert_table_input(char* full_command){
 	const char s[2] = " ";
 	char * first = strtok(str, s);
 	char * second = strtok(NULL, s);
-	char * third = strtok(NULL, s);
+	char * third = strtok(NULL, s); //nama table
+	char * fourth = strtok(NULL, s); //deret kolom
 
 	if(!strcmp(first, "INSERT")){
 		if(!strcmp(second, "INTO")){
 			//function insert into (third)
+
 		}
 		return true;
 	}
