@@ -43,14 +43,28 @@ bool make_directory(char *path){
 }
 
 bool make_file(char *path){
-	FILE *file = fopen(path, "w");
-	fclose(file);
+	struct stat st = {0};
+
+	if (stat(path, &st) == -1) {
+		FILE *file = fopen(path, "w");
+		fclose(file);
+		return true;
+	}
+
+	return false;
 }
 
 bool write_file(char *path, char *content){
-	FILE *file = fopen(path, "w");
-	fwrite(content, 1, buffersize, file);
-	fclose(file);
+	struct stat st = {0};
+
+	if (stat(path, &st) == -1) {	
+		FILE *file = fopen(path, "w");
+		fwrite(content, 1, buffersize, file);
+		fclose(file);
+		return true;
+	}
+
+	return false;
 }
 
 bool remove_directory(char *path){
@@ -78,6 +92,10 @@ void write_table_path(char *arr, char *database_name, char *name){
 	sprintf(arr, "%s/%s/%s", databases_path, database_name, name);
 }
 
+void log_output(char *message){
+	printf("%s\n", message);
+}
+
 bool make_database(char *name){
 	char temp[buffersize];
 
@@ -96,10 +114,13 @@ bool make_table(char *database_name, char *name){
 	return success;
 }
 
-bool make_table_columns(char *database_name, char *table_name, char **columns, int column_length){
+bool make_table_columns(char *database_name, char *table_name, char columns[128][256], int column_length){
+	printf("Make table columns\n");
 	if (column_length <= 0){
 		return false;
 	}
+
+	printf("Lanjut\n");
 
 	char temp[buffersize];
 	
@@ -120,14 +141,16 @@ bool make_table_columns(char *database_name, char *table_name, char **columns, i
 		char *second = strtok(NULL, " ");
 
 		strcat(content, first);
-		strcat(content, "|");
+		strcat(content, ":");
 		strcat(content, second);
 		strcat(content, "\n");
 	}
 
 	strcat(content, "\n#Data\n");
 
-	fwrite(content, 1, buffersize, file);
+	printf("CONTENT :\n%s\n", content);
+
+	fwrite(content, 1, strlen(content), file);
 
 	fclose(file);
 
@@ -320,8 +343,8 @@ bool remove_column(char *database_name, char *table_name, char *column_name){
 	return true;
 }
 
-char current_database[1024];
-char current_client[1024];
+char current_database[1024] = {0};
+char current_client[1024] = {0};
 
 bool is_logined = false;
 
@@ -393,11 +416,16 @@ bool create_database(char *username, char *database_name){
 	return make_database(database_name);
 }
 
-bool create_table(char *username, char *database_name, char *table_name, char **columns, int column_length){
+bool create_table(char *username, char *database_name, char *table_name, char columns[128][256], int column_length){
 	bool flag = make_table(database_name, table_name);
+
+	printf("check flag\n");
+
 	if (flag == false){
 		return false;
 	}
+
+	printf("Try make table columns\n");
 
 	return make_table_columns(database_name, table_name, columns, column_length);
 }
@@ -465,10 +493,10 @@ bool create_user_input(char* full_command){
 			if(!strcmp(fourth, "IDENTIFIED")){
 				if(!strcmp(fifth, "BY")){
 					create_user(third, sixth);
+					return true;
 				}
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -523,23 +551,45 @@ bool create_input(char* full_command){
 			create_database(current_client, third);
 		}
 		else if(!strcmp(second, "TABLE")){
-			char *command = strstr(full_command, "(");
+			if (current_database[0] == 0){
+				log_output("Use table first");
+				return true;
+			}
 
-			if (command && *command == '('){
-				command++;
+			log_output("Creating TABLE");
 
-				char *columns[256];
+			char *com = strstr(full_command, "(");
+
+			if (com && *com == '('){
+				com++;
+
+				char command[1024];
+
+				strcpy(command, com);
+
+				char columns[128][256];
 				int column_length = 0;
 
 				char * token = strtok(command, ",");
 
+				printf("command ->\n");
 				while (token != NULL){
-					strcpy(columns[column_length++], token);
+					while(*token == ' ') token++;
+					strcpy(columns[column_length], token);
+	
+					if (columns[column_length][strlen(columns[column_length])-1] == ')'){	
+						columns[column_length][strlen(columns[column_length])-1] = 0;
+					}
+
+					puts(columns[column_length]);
+
+					column_length++;
 
 					token = strtok(NULL, ",");
 				}
 
-				return create_table(current_client, current_database, third, columns, column_length);
+				create_table(current_client, current_database, third, columns, column_length);
+				return true;
 			}
 		}
 		return true;
@@ -672,35 +722,45 @@ bool select_table_input(char* full_command){
 
 //kurang yang where, probably
 
-int check_input (){
+int check_input (char *inp){
 	char input[1024];
-	scanf("%s", input);
+
+	strcpy(input, inp);
+
+	int len = strlen(input);
+
+	if (input[len - 1] != ';'){
+		return 0;
+	}
+
+	input[len - 1] = 0;
+
 	if (create_user_input(input)){
-		
+		puts("create user");
 	}
 	else if(use_database_input(input)){
-		
+		puts("use database");
 	}
 	else if(grant_permission_input(input)){
-		
+		puts("grant permission");
 	}
 	else if(create_input(input)){
-		
+		puts("create input");
 	}
 	else if(drop_input(input)){
-		
+		puts("drop input");
 	}
 	else if(insert_table_input(input)){
-		
+		puts("inser table");
 	}
 	else if(update_table_input(input)){
-		
+		puts("update table");
 	}
 	else if(delete_table_input(input)){
-		
+		puts("delete table");
 	}
 	else if(select_table_input(input)){
-		
+		puts("select table");
 	}
 
 	return 0;
@@ -751,11 +811,16 @@ void prepare_socket(){
 
 // Server
 int main(int argc, char const *argv[]) {
-	prepare_socket();
+	//prepare_socket();
 
-	initial();
+	//initial();
 
-	printf("Waiting connection..\n");
+	//printf("Waiting connection..\n");
+	
+	check_input("CREATE DATABASE UNTA;");
+	//check_input("USE DATABASE UNTA;");
+	strcpy(current_database,"UNTA");
+	check_input("CREATE TABLE SAPI (kolom1 int, kolom2 string, kolom3 string, kolom4 int);");
 
 	return 0;
 }
