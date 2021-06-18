@@ -101,7 +101,8 @@ void write_table_path(char *arr, char *database_name, char *name){
 }
 
 void log_output(char *message){
-	printf("%s\n", message);
+	strcat(sendbuffer, message);
+	printf("%s", message);
 }
 
 bool make_database(char *name){
@@ -173,6 +174,14 @@ bool remove_database(char *name){
 	write_database_path(temp, name);
 
 	bool success = remove_directory(temp);
+
+	if (success){
+		log_output("Database dropped successfully.\n");
+	} else {
+		log_output("Failed : Database not found or not empty.\n");
+	}
+
+	return success;
 }
 
 bool remove_table(char *database_name, char *name){
@@ -181,6 +190,14 @@ bool remove_table(char *database_name, char *name){
 	write_table_path(temp, database_name, name);
 
 	bool success = remove_file(temp);
+
+	if (success){
+		log_output("Table dropped successfully.\n");
+	} else {
+		log_output("Failed : Table not found.\n");
+	}
+
+	return success;
 }
 
 char columns_list[128][1024];
@@ -326,6 +343,7 @@ bool remove_column(char *database_name, char *table_name, char *column_name){
 	}
 
 	if (deleted_column_index == -1){
+		log_output("Failed : No Column Match\n");
 		return false;
 	}
 
@@ -366,6 +384,7 @@ bool remove_column(char *database_name, char *table_name, char *column_name){
 
 	dump_local_table(database_name, table_name);
 
+	log_output("Column Drop Successfully.\n");
 	return true;
 }
 
@@ -550,12 +569,12 @@ bool update_table(char *username, char *database_name, char *table_name, char *k
 	printf("Updating\n");
 
 	if (column_to_be_changed == -1){
-		printf("No Column exist\n");
+		log_output("No Column exist\n");
 		return false;
 	}
 
 	if (where != NULL && column_on_where == -1){
-		printf("No Where Column exist\n");
+		log_output("No Where Column exist\n");
 		return false;
 	}
 
@@ -633,9 +652,11 @@ bool create_user_input(char* full_command){
 				if(!strcmp(fifth, "BY")){
 					if (!strcmp(current_client, "__ROOT__")){
 						create_user(third, sixth);
-						log_output("User Added");
+						log_output("User ");
+						log_output(third);
+						log_output(" Added Successfully.\n");
 					} else {
-						log_output("Failed : Must ROOT");
+						log_output("Failed : Must ROOT.\n");
 					}
 					return true;
 				}
@@ -654,8 +675,13 @@ bool use_database_input(char* full_command){
 
 
 	if(!strcmp(first, "USE")){
-		//function use database(second)
+		//function use database(second
+		
 		use_database(current_client, second);
+
+		log_output("Using Database ");
+		log_output(second);
+		log_output(".");
 		return true;
 	}
 	return false;
@@ -675,8 +701,15 @@ bool grant_permission_input(char* full_command){
 		if(!strcmp(second, "PERMISSION")){
 			if (!strcmp(fourth, "INTO")){
 				grant_permission(current_client, third, fifth);
+				log_output("Permission granted for ");
+				log_output(third);
+				log_output(" on Database ");
+				log_output(fifth);
+				log_output(".\n");
+				return true;
 			}
 		}
+		log_output("Grant permission syntax error.\n");
 		return true;
 	}
 	return false;
@@ -696,6 +729,8 @@ bool create_input(char* full_command){
 	if(!strcmp(first, "CREATE")){
 		if(!strcmp(second, "DATABASE")){
 			create_database(current_client, third);
+			log_output("Database Created Successfully.\n");
+			return true;
 		}
 		else if(!strcmp(second, "TABLE")){
 			if (current_database[0] == 0){
@@ -738,9 +773,11 @@ bool create_input(char* full_command){
 				printf("Before create_table()\n");
 
 				create_table(current_client, current_database, third, columns, column_length);
+				log_output("Table Created Successfully.\n");
 				return true;
 			}
 		}
+		log_output("Failed : Syntax Create error.\n");
 		return true;
 	}
 	return false;
@@ -825,9 +862,11 @@ bool insert_table_input(char* full_command){
 				printf("sudah\n");
 
 				insert_into(current_client, current_database, third, values, column_length);
+				log_output("Row Inserted.\n");
 
 				return true;
 			}
+			log_output("Failed : Syntax Insert Error.\n");
 			return true;
 		}
 	}
@@ -871,9 +910,10 @@ bool update_table_input(char* full_command){
 				printf("Update strstr\n");
 				update_table(current_client, current_database, second, fourth, fifth, sixth, seventh, eight);
 			} else {
-				printf("Syntax error : No =(equal sign)\n");
+				log_output("Syntax error : No =(equal sign)\n");
 			}
 		}
+		log_output("Failed : Syntax update error.");
 		return true;
 	}
 	return false;
@@ -1021,21 +1061,7 @@ void prepare_socket(){
     }
 }
 
-// Server
-int main(int argc, char const *argv[]) {
-	//prepare_socket();
-
-	initial();
-
-	uid_t uid = getuid();
-	uid_t euid = geteuid();
-
-	if (euid != 0){
-		puts("REGULAR");
-	} else {
-		puts("ROOT");
-	}	
-
+void debug_only(){	
 	check_input("CREATE DATABASE BINATANG;");
 	check_input("USE BINATANG;");
 
@@ -1052,6 +1078,42 @@ int main(int argc, char const *argv[]) {
 	
 	check_input("UPDATE KUCING SET usia=10;");
 	check_input("UPDATE KUCING SET usia=20 WHERE id=2;");
+}
+
+// Server
+int main(int argc, char const *argv[]) {
+	prepare_socket();
+
+	initial();
+
+	char input[1024];
+
+	printf("Waiting connection..\n");
+
+	while (true){
+		receive_message();
+		strcpy(input, receivebuffer);
+
+		memset(sendbuffer, 0, 1024);
+
+		check_input(input);
+
+		send_message(sendbuffer);
+	}
+
+	/*
+	uid_t uid = getuid();
+	uid_t euid = geteuid();
+
+	if (euid != 0){
+		puts("REGULAR");
+	} else {
+		puts("ROOT");
+	}	
+
+	*/
+
+	//debug_only();
 
 	return 0;
 }

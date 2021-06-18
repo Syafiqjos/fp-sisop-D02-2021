@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <stdbool.h>
 #define PORT 8080
  
 struct sockaddr_in address;
@@ -56,7 +57,22 @@ int main(int argc, char const *argv[]) {
 		return error;
 	}
 
+	uid_t euid = geteuid();
+	
+	if (euid != 0){
+		puts("REGULAR");
+	} else {
+		puts("ROOT");
+	}
+
 	printf("Test Connect : \n");
+
+	while (true){
+		scanf(" %[^\n]", sendbuffer);
+		send_message(sendbuffer);
+		receive_message();
+		printf("%s", receivebuffer);
+	}
 
 	return 0;
 }
