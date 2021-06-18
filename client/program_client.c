@@ -6,13 +6,26 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #define PORT 8080
-  
-int main(int argc, char const *argv[]) {
-    struct sockaddr_in address;
-    int sock = 0, valread;
-    struct sockaddr_in serv_addr;
-    char *hello = "Hello from client";
-    char buffer[1024] = {0};
+ 
+struct sockaddr_in address;
+int sock = 0, valread;
+struct sockaddr_in serv_addr;
+char buffer[1024] = {0};
+
+int buffersize = 1024;
+
+char sendbuffer[1024] = {0};
+char receivebuffer[1024] = {0};
+
+void send_message(char *message){
+    send(sock , message , buffersize , 0 );
+}
+
+void receive_message(){	
+    valread = read(sock , receivebuffer, buffersize);
+}
+
+int prepare_socket(){	
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("\n Socket creation error \n");
         return -1;
@@ -32,10 +45,18 @@ int main(int argc, char const *argv[]) {
         printf("\nConnection Failed \n");
         return -1;
     }
-
-    send(sock , hello , strlen(hello) , 0 );
-    printf("Hello message sent\n");
-    valread = read( sock , buffer, 1024);
-    printf("%s\n",buffer );
     return 0;
+}
+
+// Client
+int main(int argc, char const *argv[]) {
+	int error = prepare_socket();
+
+	if (error != 0){
+		return error;
+	}
+
+	printf("Test Connect : \n");
+
+	return 0;
 }

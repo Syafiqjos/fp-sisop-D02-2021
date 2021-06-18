@@ -635,10 +635,13 @@ void prepare_socket(){
     }
 }
 
+// Server
 int main(int argc, char const *argv[]) {
 	prepare_socket();
 
 	initial();
+
+	printf("Waiting connection..\n");
 
 	return 0;
 }
