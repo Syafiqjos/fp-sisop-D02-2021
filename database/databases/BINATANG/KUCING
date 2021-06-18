@@ -1,0 +1,9 @@
+#Structure
+id:int
+nama:string
+usia:int
+
+#Data
+1|Un|4
+2|Any|3
+3|Liza|2

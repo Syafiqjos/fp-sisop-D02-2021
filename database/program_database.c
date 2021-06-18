@@ -43,9 +43,7 @@ bool make_directory(char *path){
 }
 
 bool make_file(char *path){
-	struct stat st = {0};
-
-	if (stat(path, &st) == -1) {
+	if (access(path, F_OK) != 0) {
 		FILE *file = fopen(path, "w");
 		fclose(file);
 		return true;
@@ -55,9 +53,7 @@ bool make_file(char *path){
 }
 
 bool write_file(char *path, char *content){
-	struct stat st = {0};
-
-	if (stat(path, &st) == -1) {	
+	if (access(path, F_OK) != 0) {	
 		FILE *file = fopen(path, "w");
 		fwrite(content, 1, buffersize, file);
 		fclose(file);
@@ -108,8 +104,10 @@ bool make_database(char *name){
 bool make_table(char *database_name, char *name){
 	char temp[buffersize];
 
+
 	write_table_path(temp, database_name, name);
 
+	puts("gajah");
 	bool success = make_file(temp);
 	return success;
 }
@@ -417,6 +415,7 @@ bool create_database(char *username, char *database_name){
 }
 
 bool create_table(char *username, char *database_name, char *table_name, char columns[128][256], int column_length){
+	printf("making table..\n");
 	bool flag = make_table(database_name, table_name);
 
 	printf("check flag\n");
@@ -615,6 +614,8 @@ bool create_input(char* full_command){
 
 					token = strtok(NULL, ",");
 				}
+
+				printf("Before create_table()\n");
 
 				create_table(current_client, current_database, third, columns, column_length);
 				return true;
@@ -887,18 +888,17 @@ int main(int argc, char const *argv[]) {
 		puts("REGULAR");
 	} else {
 		puts("ROOT");
-	}
+	}	
 
-	//printf("Waiting connection..\n");
-	
-	//create_user_input("CREATE USER gajah IDENTIFIED BY gajahjuga");
+	check_input("CREATE DATABASE BINATANG;");
+	check_input("USE BINATANG;");
 
-	//check_input("CREATE DATABASE UNTA;");
-	//check_input("USE DATABASE UNTA;");
-	//strcpy(current_database,"UNTA");
-	//check_input("CREATE TABLE SAPI (kolom1 int, kolom2 string, kolom3 string, kolom4 int);");
+	printf("JJJJ : %s\n", current_database);
 
-	//check_input("INSERT INTO SAPI (1, 'segitiga', 'mulai', 9);");
+	check_input("CREATE TABLE KUCING (id int, nama string, usia int);");
+	check_input("INSERT INTO KUCING (1, 'Un', 4);");
+	check_input("INSERT INTO KUCING (2, 'Any', 3);");
+	check_input("INSERT INTO KUCING (3, 'Liza', 2);");
 
 	return 0;
 }
