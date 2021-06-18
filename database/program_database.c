@@ -52,6 +52,7 @@ bool make_file(char *path){
 	return false;
 }
 
+
 bool write_file(char *path, char *content){
 	if (access(path, F_OK) != 0) {	
 		FILE *file = fopen(path, "w");
@@ -61,6 +62,17 @@ bool write_file(char *path, char *content){
 	}
 
 	return false;
+}
+
+bool write_file_force(char *path, char *content){
+//	if (access(path, F_OK) != 0) {	
+		FILE *file = fopen(path, "w");
+		fwrite(content, 1, buffersize, file);
+		fclose(file);
+		return true;
+//	}
+
+//	return false;
 }
 
 bool remove_directory(char *path){
@@ -200,8 +212,10 @@ void get_table_columns(char *database_name, char *table_name) {
 		if (on_structure){
 			//printf("%s", token);
 			char *spl = strtok(token, ":");
+			memset(columns_list[column_list_size], 0, 1024);
 			strcpy(columns_list[column_list_size], spl);
 			spl = strtok(NULL, ":");
+			memset(columns_list_type[column_list_size], 0, 32);
 			strncpy(columns_list_type[column_list_size], spl, strlen(spl) - 1);
 			column_list_size++;
 		} else if (strstr(token, "#Structure")){
@@ -219,6 +233,7 @@ char *get_table_column_type(char *database_name, char *table_name, char *column_
 	for (;column_index < column_list_size;column_index++){
 		if (strcmp(columns_list[column_index], column_name) == 0){
 			char *o = malloc(32);
+			memset(columns_list_type[column_index], 0, 32);
 			strcpy(o, columns_list_type[column_index]);
 			return o;
 		}
@@ -246,6 +261,7 @@ void get_table_rows(char *database_name, char *table_name) {
 		}
 
 		if (on_data){
+			memset(rows_list[row_list_size], 0, 1024);
 			strncpy(rows_list[row_list_size], token, strlen(token) - 1);
 			row_list_size++;
 		} else if (strstr(token, "#Data")){
@@ -256,6 +272,9 @@ void get_table_rows(char *database_name, char *table_name) {
 
 void dump_local_table(char *database_name, char *table_name){
 	filebuffer[0] = 0;
+	
+	memset(filebuffer, 0, 1024);
+	
 	strcat(filebuffer, "#Structure\n");
 
 	int i = 0;
@@ -279,12 +298,14 @@ void dump_local_table(char *database_name, char *table_name){
 	
 	write_table_path(temp, database_name, table_name);
 
-	write_file(temp, filebuffer);
+	write_file_force(temp, filebuffer);
 }
 
 bool remove_column(char *database_name, char *table_name, char *column_name){
 	get_table_columns(database_name, table_name);
 	get_table_rows(database_name, table_name);
+
+	printf("Removing column..\n");
 
 	int deleted_column_index = -1;
 	int i = 0;
@@ -335,6 +356,8 @@ bool remove_column(char *database_name, char *table_name, char *column_name){
 			rows_list[i][strlen(rows_list[i]) - 1] = '\0';
 		}
 	}
+
+	printf("dumping table..\n");
 
 	dump_local_table(database_name, table_name);
 
@@ -647,7 +670,8 @@ bool drop_input(char* full_command){
 		}
 		else if(!strcmp(second, "COLUMN")){
 			//function drop column (third)
-			if (!strcmp(fifth, "FROM")){
+			if (!strcmp(fourth, "FROM")){
+				printf("dropping column..\n");
 				drop_column(current_client, current_database, fifth, third);
 			}
 		}
@@ -899,6 +923,10 @@ int main(int argc, char const *argv[]) {
 	check_input("INSERT INTO KUCING (1, 'Un', 4);");
 	check_input("INSERT INTO KUCING (2, 'Any', 3);");
 	check_input("INSERT INTO KUCING (3, 'Liza', 2);");
+
+	check_input("DROP COLUMN nama FROM KUCING;");
+	//check_input("DROP TABLE KUCING;");
+	//check_input("DROP DATABASE BINATANG;");
 
 	return 0;
 }
