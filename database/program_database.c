@@ -119,11 +119,13 @@ bool make_table_columns(char *database_name, char *table_name, char **columns, i
 		char *first = strtok(token," ");
 		char *second = strtok(NULL, " ");
 
-		strcpy(content, first);
-		strcpy(content, "|");
-		strcpy(content, second);
-		strcpy(content, "\n");
+		strcat(content, first);
+		strcat(content, "|");
+		strcat(content, second);
+		strcat(content, "\n");
 	}
+
+	strcat(content, "\n#Data\n");
 
 	fwrite(content, 1, buffersize, file);
 
@@ -412,8 +414,39 @@ bool drop_column(char *username, char *database_name, char *table_name, char *co
 	return remove_column(database_name, table_name, column_name);
 }
 
-bool insert_into(char *username, char *database_name, char *table_name, char **values){
+bool insert_into(char *username, char *database_name, char *table_name, char **values, int column_length){
+	get_table_columns(database_name, table_name);
 	
+	if (column_length != column_list_size){
+		return false;
+	}
+
+	char temp[buffersize];
+	
+	write_table_path(temp, database_name, table_name);
+
+	FILE *file = fopen(temp ,"a");
+
+	char content[buffersize];
+	content[0] = 0;
+
+	int i = 0;
+	for (;i < column_length;i++){
+		char * token = values[i];
+
+		strcat(content, token);
+
+		if (i < column_length - 1){
+			strcat(content, "|");
+		}
+	}
+	strcat(content, "\n");
+
+	fwrite(content, 1, strlen(content), file);
+
+	fclose(file);
+
+	return true;
 }
 
 bool create_user_input(char* full_command){
@@ -555,10 +588,26 @@ bool insert_table_input(char* full_command){
 
 	if(!strcmp(first, "INSERT")){
 		if(!strcmp(second, "INTO")){
-			//function insert into (third)
+			char *command = strstr(full_command, "(");
 
+			if (command && *command == '('){
+				command++;
+
+				char *values[256];
+				int column_length = 0;
+
+				char * token = strtok(command, ",");
+
+				while (token != NULL){
+					strcpy(values[column_length++], token);
+
+					token = strtok(NULL, ",");
+				}
+
+				return insert_into(current_client, current_database, third, values, column_length);
+			}
+			return true;
 		}
-		return true;
 	}
 	return false;
 }
