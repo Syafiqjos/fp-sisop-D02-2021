@@ -512,7 +512,12 @@ bool create_user_input(char* full_command){
 		if(!strcmp(second, "USER")){
 			if(!strcmp(fourth, "IDENTIFIED")){
 				if(!strcmp(fifth, "BY")){
-					create_user(third, sixth);
+					if (!strcmp(current_client, "__ROOT__")){
+						create_user(third, sixth);
+						log_output("User Added");
+					} else {
+						log_output("Failed : Must ROOT");
+					}
 					return true;
 				}
 			}
@@ -527,6 +532,7 @@ bool use_database_input(char* full_command){
 	const char s[2] = " ";
 	char * first = strtok(str, s);
 	char * second = strtok(NULL, s);
+
 
 	if(!strcmp(first, "USE")){
 		//function use database(second)
@@ -565,6 +571,8 @@ bool create_input(char* full_command){
 	char * second = strtok(NULL, s);
 	char * third = strtok(NULL, s);
 	char * fourth = strtok(NULL, s);
+
+	printf("LKJASLKDJASLDJ\n");
 
 	if(!strcmp(first, "CREATE")){
 		if(!strcmp(second, "DATABASE")){
@@ -812,14 +820,27 @@ int check_input (char *inp){
 int initial() {
 	make_directory(databases_path);
 	make_database("__ROOT__");
-	make_table("__ROOT__", "__USER__"); //user login password relation
-	make_table("__ROOT__", "__DATABASE__"); //user and database relation
+	//make_table("__ROOT__", "__USER__"); //user login password relation
+	//make_table("__ROOT__", "__DATABASE__"); //user and database relation
 
-	get_table_columns("__ROOT__", "__USER__");
-	get_table_rows("__ROOT__", "__USER__");
+	//get_table_columns("__ROOT__", "__USER__");
+	//get_table_rows("__ROOT__", "__USER__");
 
+	
+	//check_input("USE DATABASE __ROOT__;");
 
+	strcpy(current_client, "__ROOT__");
+	strcpy(current_database, "__ROOT__");
 
+	printf("CREATE __USER__\n");
+
+	check_input("CREATE TABLE __USER__ (username string, password string);");
+	check_input("INSERT INTO __USER__ ('__ROOT__', '__ROOT__');");
+	
+	printf("CREATE __DATABASE__\n");
+
+	check_input("CREATE TABLE __DATABASE__ (username string, database string);");
+	check_input("INSERT INTO __DATABASE__ ('__ROOT__', '__ROOT__');");
 }
 
 void prepare_socket(){	

@@ -1,0 +1,6 @@
+#Structure
+username:string
+password:string
+
+#Data
+__ROOT__|__ROOT__
