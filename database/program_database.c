@@ -101,13 +101,13 @@ bool make_table_columns(char *database_name, char *table_name, char **columns, i
 		return false;
 	}
 
-	char *temp[buffersize];
+	char temp[buffersize];
 	
-	write_table_path(temp, database_name, name);
+	write_table_path(temp, database_name, table_name);
 
-	FILE *file = fopen(temp ,'w');
+	FILE *file = fopen(temp ,"w");
 
-	char content[buffersize] = { 0 };
+	char content[buffersize];
 
 	strcpy(content, "#Structure\n");
 
@@ -122,7 +122,7 @@ bool make_table_columns(char *database_name, char *table_name, char **columns, i
 		strcpy(content, first);
 		strcpy(content, "|");
 		strcpy(content, second);
-		strcpy("\n");
+		strcpy(content, "\n");
 	}
 
 	fwrite(content, 1, buffersize, file);
@@ -495,7 +495,7 @@ bool create_input(char* full_command){
 			if (command && *command == '('){
 				command++;
 
-				char columns[128][256];
+				char *columns[256];
 				int column_length = 0;
 
 				char * token = strtok(command, ",");
